@@ -1,7 +1,5 @@
-<#-- @ftlvariable name="description" type="java.lang.String" -->
-<#-- @ftlvariable name="location" type="java.lang.String" -->
-<#-- @ftlvariable name="timeValue" type="java.lang.String" -->
-<#-- @ftlvariable name="missionName" type="java.lang.String" -->
+<#-- @ftlvariable name="country" type="java.lang.String" -->
+<#-- @ftlvariable name="name" type="java.lang.String" -->
 <#-- @ftlvariable name="errorMsg" type="java.lang.String" -->
 
 
@@ -26,25 +24,17 @@
 <div>
     <p>* Fields are required.</p>
 </div>
-<form name="create_event" action="/mission/create" method="POST">
+<form name="create_event" action="/rocket/create" method="POST">
     <div id="admin_left_pane" class="fieldset_without_border">
         <div><p>Mission Details</p></div>
         <ol>
             <li>
-                <label for="missionName" class="bold">Mission Name:*</label>
-                <input id="missionName" name="missionName" type="text" value="${missionName!""}">
+                <label for="name" class="bold">Name:*</label>
+                <input id="name" name="name" type="text" value="${name!""}">
             </li>
             <li>
-                <label for="time" class="bold">Date and time (dd/mm/yyyy, HH AM/PM):*</label>
-                <input id="time" name="time" type="text" value="${time?datetime!""}">
-            </li>
-            <li>
-                <label for="location" class="bold">Location:*</label>
-                <input id="location" name="location" type="text" value="${location!""}">
-            </li>
-            <li>
-                <label for="description" class="bold">Description:</label>
-                <input id="description" name="description" type="text" value="${description!""}">
+                <label for="country" class="bold">country:*</label>
+                <input id="country" name="country" type="text" value="${country!""}">
             </li>
         </ol>
     </div>
