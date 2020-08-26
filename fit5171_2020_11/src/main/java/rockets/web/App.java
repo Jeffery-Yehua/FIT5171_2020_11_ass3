@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rockets.dataaccess.DAO;
 import rockets.dataaccess.neo4j.Neo4jDAO;
+import rockets.model.LaunchServiceProvider;
 import rockets.model.Rocket;
 import rockets.model.User;
 import spark.ModelAndView;
@@ -72,14 +73,14 @@ public class App {
         // "/users"
         handleGetUsers();
 
-        // "/rocket/:id
-        handleGetRocket();
+        // "/rocket/create
+        handlePostCreateRocket();
 
         // "/rocket/create
         handleGetCreateRocket();
 
-        // "/rocket/create
-        handlePostCreateRocket();
+        // "/rocket/:id
+        handleGetRocket();
 
         // "/rockets"
         handleGetRockets();
@@ -128,9 +129,6 @@ public class App {
     }
 
 
-    /**
-     * TODO: a serious bug in this method. Fix it (and test to verify)!
-     */
     private static void handlePostRegister() {
         post("/register", (req, res) -> {
             Map<String, Object> attributes = new HashMap<>();
@@ -145,13 +143,21 @@ public class App {
 
             logger.info("Registering <" + email + ">, " + password);
 
+            // if the user already exists
+            User existUser = dao.getUserByEmail(email);
+            if (existUser != null) {
+                return new ModelAndView(null, "base_page.html.ftl");
+            }
+
             User user;
             try {
+
                 user = new User();
                 user.setEmail(email);
                 user.setPassword(password);
                 user.setFirstName(firstName);
                 user.setLastName(lastName);
+
                 dao.createOrUpdate(user);
 
                 res.status(301);
@@ -271,16 +277,62 @@ public class App {
         }, new FreeMarkerEngine());
     }
 
-    // TODO: Need to TDD this
-    private static void handleGetRocket() {
-    }
 
-    // TODO: Need to TDD this
     private static void handlePostCreateRocket() {
+        post("/rocket/create", (req, res) -> {
+            Map<String, Object> attributes = new HashMap<>();
+            String name = req.queryParams("name");
+            String country = req.queryParams("country");
+
+            attributes.put("name", "");
+            attributes.put("country", "");
+
+            logger.info("Creating <" + name + ">");
+
+            Rocket rocket;
+            try {
+
+                rocket = new Rocket(name, country, new LaunchServiceProvider());
+
+                dao.createOrUpdate(rocket);
+
+                res.status(200);
+                res.redirect("/rockets");
+                attributes.put("rockets", dao.loadAll(Rocket.class));
+                return new ModelAndView(attributes, "rockets.html.ftl");
+            } catch (Exception e) {
+                return handleException(res, attributes, e, "rockets.html.ftl");
+            }
+        }, new FreeMarkerEngine());
     }
 
-    // TODO: Need to TDD this
+
     private static void handleGetCreateRocket() {
+        get("/rocket/create", (req, res) -> {
+            Map<String, Object> attributes = new HashMap<>();
+            attributes.put("name", "");
+            attributes.put("country", "");
+
+            return new ModelAndView(attributes, "create_rocket.html.ftl");
+        }, new FreeMarkerEngine());
+    }
+
+    private static void handleGetRocket() {
+        get("/rocket/:id", (req, res) -> {
+            Map<String, Object> attributes = new HashMap<>();
+            try {
+                String id = req.params(":id");
+                Rocket rocket = dao.load(Rocket.class, Long.parseLong(id));
+                if (null != rocket) {
+                    attributes.put("rocket", rocket);
+                } else {
+                    attributes.put("errorMsg", "No rocket with the ID " + id + ".");
+                }
+                return new ModelAndView(attributes, "rocket.html.ftl");
+            } catch (Exception e) {
+                return handleException(res, attributes, e, "rocket.html.ftl");
+            }
+        }, new FreeMarkerEngine());
     }
 
 
@@ -288,7 +340,7 @@ public class App {
         get("/rockets", (req, res) -> {
             Map<String, Object> attributes = new HashMap<>();
             try {
-                attributes.put("missions", dao.loadAll(Rocket.class));
+                attributes.put("rockets", dao.loadAll(Rocket.class));
                 return new ModelAndView(attributes, "rockets.html.ftl");
             } catch (Exception e) {
                 return handleException(res, attributes, e, "rockets.html.ftl");
