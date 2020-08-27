@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>User.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FIT5171_20T3_11</a> &gt; <a href="index.source.html" class="el_package">rockets.model</a> &gt; <span class="el_source">User.java</span></div><h1>User.java</h1><pre class="source lang-java linenums">//package rockets.model;
+//
+//import org.neo4j.ogm.annotation.NodeEntity;
+//
+//import java.util.Objects;
+//
+//import static org.apache.commons.lang3.Validate.notBlank;
+//
+//@NodeEntity
+//public class User extends Entity {
+//    private String firstName;
+//
+//    private String lastName;
+//
+//    private String email;
+//
+//    private String password;
+//
+//    public String getFirstName() {
+//        return firstName;
+//    }
+//
+//    public void setFirstName(String firstName) throws IllegalArgumentException {
+//        notBlank(firstName, &quot;firstName cannot be null or empty&quot;);
+//        if (firstName.length() &gt;= 128) {
+//            throw new IllegalArgumentException(&quot;firstName cannot exceed 128 characters&quot;);
+//        }
+//        this.firstName = firstName;
+//    }
+//
+//    public String getLastName() { return lastName; }
+//
+//    public void setLastName(String lastName) throws IllegalArgumentException {
+//        notBlank(lastName, &quot;lastName cannot be null or empty&quot;);
+//        if (lastName.length() &gt;= 64) {
+//            throw new IllegalArgumentException(&quot;lastName cannot exceed 64 characters&quot;);
+//        }
+//        this.lastName = lastName;
+//    }
+//
+//    public String getEmail() {
+//        return email;
+//    }
+//
+//    public void setEmail(String email) throws IllegalArgumentException {
+//        notBlank(email, &quot;email cannot be null or empty&quot;);
+//        if (email.length() &gt;= 320 &amp;&amp; email.contains(&quot;@&quot;)) {
+//            throw new IllegalArgumentException(&quot;email cannot exceed 320 characters&quot;);
+//        } else if (email.length() &lt;= 5 &amp;&amp; email.contains(&quot;@&quot;)){
+//            throw new IllegalArgumentException(&quot;email cannot be shorter than 5 characters&quot;);
+//        }
+//        this.email = email;
+//    }
+//
+//    public String getPassword() {
+//        return password;
+//    }
+//
+//    public void setPassword(String password) throws IllegalArgumentException {
+//        notBlank(password, &quot;password cannot be null or empty&quot;);
+//        if (password.length() &gt;= 128) {
+//            throw new IllegalArgumentException(&quot;password cannot exceed 128 characters&quot;);
+//        }
+//        else if (password.length() &lt;= 6) {
+//            throw new IllegalArgumentException(&quot;password cannot be shorter than 6 characters&quot;);
+//        }
+//        this.password = password;
+//    }
+//
+//    // match the given password against user's password and return the result
+//    public boolean isPasswordMatch(String password) {
+//        return this.password.equals(password.trim());
+//    }
+//
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (o == null || getClass() != o.getClass()) return false;
+//        User user = (User) o;
+//        return Objects.equals(email, user.email);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(email);
+//    }
+//
+//    @Override
+//    public String toString() {
+//        return &quot;User{&quot; +
+//                &quot;firstName='&quot; + firstName + '\'' +
+//                &quot;, lastName='&quot; + lastName + '\'' +
+//                &quot;, email='&quot; + email + '\'' +
+//                '}';
+//    }
+//}
+package rockets.model;
+
+import java.util.Objects;
+import java.util.regex.Pattern;
+
+import static org.apache.commons.lang3.Validate.*;
+
+<span class="fc" id="L104">public class User extends Entity {</span>
+    private String firstName;
+
+    private String lastName;
+
+    private String email;
+
+    private String password;
+
+    public String getFirstName() {
+<span class="fc" id="L114">        return firstName;</span>
+    }
+
+    public void setFirstName(String firstName) {
+<span class="fc" id="L118">        this.firstName = firstName;</span>
+<span class="fc" id="L119">    }</span>
+
+    public String getLastName() {
+<span class="fc" id="L122">        return lastName;</span>
+    }
+
+    public void setLastName(String lastName) {
+<span class="fc" id="L126">        notBlank(lastName, &quot;lastname cannot be null or empty&quot;);</span>
+<span class="fc" id="L127">        this.lastName = lastName;</span>
+<span class="fc" id="L128">    }</span>
+
+    public String getEmail() {
+<span class="fc" id="L131">        return email;</span>
+    }
+
+    public void setEmail(String email) {
+<span class="fc" id="L135">        notBlank(email, &quot;email cannot be null or empty&quot;);</span>
+<span class="fc" id="L136">        String regex = &quot;^(.+)@(.+)$&quot;;</span>
+<span class="fc" id="L137">        matchesPattern(email,regex,&quot;email must be valid&quot;);</span>
+<span class="fc" id="L138">        this.email = email;</span>
+<span class="fc" id="L139">    }</span>
+
+    public String getPassword() {
+<span class="nc" id="L142">        return password;</span>
+    }
+
+    public void setPassword(String password) {
+<span class="fc" id="L146">        notBlank(password, &quot;password cannot be null or empty&quot;);</span>
+<span class="fc" id="L147">        this.password = password;</span>
+<span class="fc" id="L148">    }</span>
+
+    // match the given password against user's password and return the result
+    public boolean isPasswordMatch(String password) {
+<span class="nc" id="L152">        return this.password.equals(password.trim());</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">        if (this == o) return true;</span>
+<span class="pc bpc" id="L158" title="1 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="fc" id="L159">        User user = (User) o;</span>
+<span class="fc" id="L160">        return Objects.equals(email, user.email);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L165">        return Objects.hash(email);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L170">        return &quot;User{&quot; +</span>
+                &quot;firstName='&quot; + firstName + '\'' +
+                &quot;, lastName='&quot; + lastName + '\'' +
+                &quot;, email='&quot; + email + '\'' +
+                '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

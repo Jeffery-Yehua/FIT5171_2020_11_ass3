@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Neo4jDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FIT5171_20T3_11</a> &gt; <a href="index.source.html" class="el_package">rockets.dataaccess.neo4j</a> &gt; <span class="el_source">Neo4jDAO.java</span></div><h1>Neo4jDAO.java</h1><pre class="source lang-java linenums">package rockets.dataaccess.neo4j;
+
+import com.google.common.collect.Sets;
+import org.neo4j.ogm.config.Configuration;
+import org.neo4j.ogm.cypher.Filter;
+import org.neo4j.ogm.cypher.Filters;
+import org.neo4j.ogm.drivers.embedded.driver.EmbeddedDriver;
+import org.neo4j.ogm.session.Session;
+import org.neo4j.ogm.session.SessionFactory;
+import org.neo4j.ogm.transaction.Transaction;
+import rockets.dataaccess.DAO;
+import rockets.model.Entity;
+import rockets.model.Launch;
+import rockets.model.LaunchServiceProvider;
+import rockets.model.Rocket;
+import rockets.model.User;
+
+import java.io.File;
+import java.util.Collection;
+
+import static org.neo4j.ogm.cypher.ComparisonOperator.EQUALS;
+
+public class Neo4jDAO implements DAO {
+    private static final int DEPTH_ENTITY = 1;
+
+    private Session session;
+    private SessionFactory sessionFactory;
+
+<span class="fc" id="L29">    public Neo4jDAO(SessionFactory sessionFactory) {</span>
+<span class="fc" id="L30">        this.sessionFactory = sessionFactory;</span>
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if (null == session) {</span>
+<span class="fc" id="L32">            session = sessionFactory.openSession();</span>
+        }
+<span class="fc" id="L34">    }</span>
+
+<span class="fc" id="L36">    public Neo4jDAO(String dbAddress) {</span>
+<span class="fc" id="L37">        File file = new File(dbAddress);</span>
+<span class="fc" id="L38">        Configuration configuration = new Configuration.Builder()</span>
+                //.uri(neoServer.boltURI().toString()) // For Bolt
+                //.uri(neoServer.httpURI().toString()) // For HTTP
+<span class="fc" id="L41">                .uri(file.toURI().toString()) // For Embedded</span>
+<span class="fc" id="L42">                .build();</span>
+<span class="fc" id="L43">        EmbeddedDriver driver = new EmbeddedDriver();</span>
+<span class="fc" id="L44">        driver.configure(configuration);</span>
+
+<span class="fc" id="L46">        sessionFactory = new SessionFactory(driver, User.class.getPackage().getName());</span>
+<span class="fc" id="L47">        session = sessionFactory.openSession();</span>
+<span class="fc" id="L48">    }</span>
+
+
+<span class="nc" id="L51">    public Neo4jDAO(Session session) {</span>
+<span class="nc" id="L52">        this.session = session;</span>
+<span class="nc" id="L53">    }</span>
+
+    @Override
+    public &lt;T extends Entity&gt; T load(Class&lt;T&gt; clazz, Long id) {
+<span class="fc" id="L57">        return session.load(clazz, id, DEPTH_ENTITY);</span>
+    }
+
+    @Override
+    public &lt;T extends Entity&gt; T createOrUpdate(T entity) {
+<span class="fc" id="L62">        Class clazz = entity.getClass();</span>
+
+<span class="fc" id="L64">        T existingEntity = findExistingEntity(entity, clazz);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (null != existingEntity) {</span>
+<span class="fc" id="L66">            entity.setId(existingEntity.getId());</span>
+        }
+<span class="fc" id="L68">        Transaction tx = session.beginTransaction();</span>
+<span class="fc" id="L69">        saveOutgoingEntities(entity, clazz);</span>
+<span class="fc" id="L70">        session.save(entity);</span>
+<span class="fc" id="L71">        tx.commit();</span>
+<span class="fc" id="L72">        return entity;</span>
+    }
+
+    // Makes sure we save associated entities correctly (only once)
+    private &lt;T extends Entity&gt; void saveOutgoingEntities(T entity, Class clazz) {
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        if (clazz.equals(Rocket.class)) {</span>
+<span class="fc" id="L78">            Rocket rocket = (Rocket) entity;</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">            for (Launch launch : rocket.getLaunches()) {</span>
+<span class="nc" id="L80">                createOrUpdate(launch);</span>
+<span class="nc" id="L81">            }</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        } else if (clazz.equals(LaunchServiceProvider.class)) {</span>
+<span class="fc" id="L83">            LaunchServiceProvider lsp = (LaunchServiceProvider) entity;</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            for (Rocket rocket : lsp.getRockets()) {</span>
+<span class="fc" id="L85">                createOrUpdate(rocket);</span>
+<span class="fc" id="L86">            }</span>
+        }
+<span class="fc" id="L88">    }</span>
+
+    private &lt;T extends Entity&gt; T findExistingEntity(Entity entity, Class clazz) {
+<span class="fc" id="L91">        Entity existingEntity = null;</span>
+<span class="fc" id="L92">        Filters filters = new Filters();</span>
+<span class="fc" id="L93">        Collection&lt;? extends Entity&gt; collection = Sets.newLinkedHashSet();</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (clazz.equals(Rocket.class)) {</span>
+<span class="fc" id="L95">            Rocket rocket = (Rocket) entity;</span>
+<span class="fc" id="L96">            filters.add(new Filter(&quot;name&quot;, EQUALS, rocket.getName()))</span>
+<span class="fc" id="L97">                    .and(new Filter(&quot;country&quot;, EQUALS, rocket.getCountry()));</span>
+<span class="fc" id="L98">            collection = session.loadAll(Rocket.class, filters);</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        } else if (clazz.equals(User.class)) {</span>
+<span class="fc" id="L100">            User user = (User) entity;</span>
+<span class="fc" id="L101">            filters.add(new Filter(&quot;email&quot;, EQUALS, user.getEmail()));</span>
+<span class="fc" id="L102">            collection = session.loadAll(User.class, filters);</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        } else if (clazz.equals(Launch.class)) {</span>
+<span class="fc" id="L104">            Launch launch = (Launch) entity;</span>
+<span class="fc" id="L105">            filters.add(new Filter(&quot;launchDate&quot;, EQUALS, launch.getLaunchDate()))</span>
+<span class="fc" id="L106">                    .and(new Filter(&quot;launchVehicle&quot;, EQUALS, launch.getLaunchVehicle()))</span>
+<span class="fc" id="L107">                    .and(new Filter(&quot;launchSite&quot;, EQUALS, launch.getLaunchSite()))</span>
+<span class="fc" id="L108">                    .and(new Filter(&quot;launchOutcome&quot;, EQUALS, launch.getLaunchOutcome()));</span>
+<span class="fc" id="L109">            collection = session.loadAll(Launch.class, filters);</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">        } else if (clazz.equals(LaunchServiceProvider.class)) {</span>
+<span class="fc" id="L111">            LaunchServiceProvider lsp = (LaunchServiceProvider) entity;</span>
+<span class="fc" id="L112">            filters.add(new Filter(&quot;name&quot;, EQUALS, lsp.getName()))</span>
+<span class="fc" id="L113">                    .and(new Filter(&quot;yearFounded&quot;, EQUALS, lsp.getYearFounded()))</span>
+<span class="fc" id="L114">                    .and(new Filter(&quot;country&quot;, EQUALS, lsp.getCountry()));</span>
+<span class="fc" id="L115">            collection = session.loadAll(LaunchServiceProvider.class, filters);</span>
+        }
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (!collection.isEmpty()) {</span>
+<span class="fc" id="L118">            existingEntity = collection.iterator().next();</span>
+        }
+<span class="fc" id="L120">        return (T) existingEntity;</span>
+    }
+
+    @Override
+    public &lt;T extends Entity&gt; Collection&lt;T&gt; loadAll(Class&lt;T&gt; clazz) {
+<span class="fc" id="L125">        return session.loadAll(clazz);</span>
+    }
+
+    // TODO: need to be tested!
+    public &lt;T extends Entity&gt; void delete(T entity) {
+<span class="fc" id="L130">        session.delete(entity);</span>
+<span class="fc" id="L131">    }</span>
+
+    @Override
+    public User getUserByEmail(String email) {
+<span class="fc" id="L135">        Collection&lt;User&gt; users = session.loadAll(User.class, new Filter(&quot;email&quot;, EQUALS, email));</span>
+
+<span class="pc bpc" id="L137" title="1 of 4 branches missed.">        if (null == users || users.isEmpty()) {</span>
+<span class="fc" id="L138">            return null;</span>
+        } else {
+<span class="fc" id="L140">            return users.iterator().next();</span>
+        }
+    }
+
+    @Override
+    public void close() {
+<span class="fc" id="L146">        sessionFactory.close();</span>
+<span class="fc" id="L147">    }</span>
+}
+
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

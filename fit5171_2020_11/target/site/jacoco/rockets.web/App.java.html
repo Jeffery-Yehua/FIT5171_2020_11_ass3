@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>App.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FIT5171_20T3_11</a> &gt; <a href="index.source.html" class="el_package">rockets.web</a> &gt; <span class="el_source">App.java</span></div><h1>App.java</h1><pre class="source lang-java linenums">package rockets.web;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rockets.dataaccess.DAO;
+import rockets.dataaccess.neo4j.Neo4jDAO;
+import rockets.model.LaunchServiceProvider;
+import rockets.model.Rocket;
+import rockets.model.User;
+import spark.ModelAndView;
+import spark.Request;
+import spark.Response;
+import spark.Spark;
+import spark.resource.ClassPathResource;
+import spark.template.freemarker.FreeMarkerEngine;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.apache.logging.log4j.core.util.Closer.closeSilently;
+import static spark.Spark.get;
+import static spark.Spark.port;
+import static spark.Spark.post;
+
+<span class="nc" id="L29">public class App {</span>
+<span class="fc" id="L30">    private static Logger logger = LoggerFactory.getLogger(App.class);</span>
+
+    private static DAO dao;
+
+    public static void setDao(DAO dao) {
+<span class="fc" id="L35">        App.dao = dao;</span>
+<span class="fc" id="L36">    }</span>
+
+    public static void main(String[] args) throws IOException {
+<span class="fc" id="L39">        Properties properties = loadProperties();</span>
+
+<span class="fc" id="L41">        int port = Integer.parseInt(properties.getProperty(&quot;spark.port&quot;));</span>
+<span class="fc" id="L42">        port(port);</span>
+
+<span class="fc" id="L44">        String dbAddress = properties.getProperty(&quot;neo4j.dir&quot;);</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        if (null == dao) {</span>
+<span class="nc" id="L46">            dao = new Neo4jDAO(dbAddress);</span>
+        }
+
+        // &quot;/&quot;
+<span class="fc" id="L50">        handleGetIndex();</span>
+
+        // &quot;/hello&quot;
+<span class="fc" id="L53">        handleGetHello();</span>
+
+        // &quot;/register&quot;
+<span class="fc" id="L56">        handleGetRegister();</span>
+
+        // &quot;/register&quot;
+<span class="fc" id="L59">        handlePostRegister();</span>
+
+        // &quot;/login&quot;
+<span class="fc" id="L62">        handleGetLogin();</span>
+
+        // &quot;/login&quot;
+<span class="fc" id="L65">        handlePostLogin();</span>
+
+        // &quot;/logout&quot;
+<span class="fc" id="L68">        handleGetLogout();</span>
+
+        // &quot;/user/:id&quot;
+<span class="fc" id="L71">        handleGetUserById();</span>
+
+        // &quot;/users&quot;
+<span class="fc" id="L74">        handleGetUsers();</span>
+
+        // &quot;/rocket/create
+<span class="fc" id="L77">        handlePostCreateRocket();</span>
+
+        // &quot;/rocket/create
+<span class="fc" id="L80">        handleGetCreateRocket();</span>
+
+        // &quot;/rocket/:id
+<span class="fc" id="L83">        handleGetRocket();</span>
+
+        // &quot;/rockets&quot;
+<span class="fc" id="L86">        handleGetRockets();</span>
+
+        // &quot;/launches&quot;
+//        handleGetLaunches();
+
+<span class="fc" id="L91">    }</span>
+
+    public static void stop() {
+<span class="fc" id="L94">        Spark.stop();</span>
+<span class="fc" id="L95">    }</span>
+
+    private static void handleGetUsers() {
+<span class="fc" id="L98">        get(&quot;/users&quot;, (req, res) -&gt; {</span>
+<span class="nc" id="L99">            Map&lt;String, Object&gt; attributes = new HashMap&lt;String, Object&gt;();</span>
+            try {
+<span class="nc" id="L101">                attributes.put(&quot;users&quot;, dao.loadAll(User.class));</span>
+<span class="nc" id="L102">                return new ModelAndView(attributes, &quot;users.html.ftl&quot;);</span>
+<span class="nc" id="L103">            } catch (Exception e) {</span>
+<span class="nc" id="L104">                return handleException(res, attributes, e, &quot;users.html.ftl&quot;);</span>
+            }
+        }, new FreeMarkerEngine());
+
+<span class="fc" id="L108">    }</span>
+
+    private static void handleGetIndex() {
+<span class="fc" id="L111">        get(&quot;/&quot;, (req, res) -&gt; {</span>
+<span class="fc" id="L112">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L113">            User user = getLoggedInUser(req);</span>
+<span class="fc" id="L114">            attributes.put(&quot;user&quot;, user);</span>
+<span class="fc" id="L115">            return new ModelAndView(attributes, &quot;base_page.html.ftl&quot;);</span>
+            //return handleBaseHelloView(req, res, attributes);
+        }, new FreeMarkerEngine());
+<span class="fc" id="L118">    }</span>
+
+    private static void handleGetRegister() {
+<span class="fc" id="L121">        get(&quot;/register&quot;, (req, res) -&gt; {</span>
+<span class="fc" id="L122">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L123">            attributes.put(&quot;email&quot;, &quot;&quot;);</span>
+<span class="fc" id="L124">            attributes.put(&quot;firstName&quot;, &quot;&quot;);</span>
+<span class="fc" id="L125">            attributes.put(&quot;lastName&quot;, &quot;&quot;);</span>
+
+<span class="fc" id="L127">            return new ModelAndView(attributes, &quot;register.html.ftl&quot;);</span>
+        }, new FreeMarkerEngine());
+<span class="fc" id="L129">    }</span>
+
+
+    private static void handlePostRegister() {
+<span class="fc" id="L133">        post(&quot;/register&quot;, (req, res) -&gt; {</span>
+<span class="fc" id="L134">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L135">            String email = req.queryParams(&quot;email&quot;);</span>
+<span class="fc" id="L136">            String password = req.queryParams(&quot;password&quot;);</span>
+<span class="fc" id="L137">            String firstName = req.queryParams(&quot;firstName&quot;);</span>
+<span class="fc" id="L138">            String lastName = req.queryParams(&quot;lastName&quot;);</span>
+
+<span class="fc" id="L140">            attributes.put(&quot;email&quot;, email);</span>
+<span class="fc" id="L141">            attributes.put(&quot;firstName&quot;, firstName);</span>
+<span class="fc" id="L142">            attributes.put(&quot;lastName&quot;, lastName);</span>
+
+<span class="fc" id="L144">            logger.info(&quot;Registering &lt;&quot; + email + &quot;&gt;, &quot; + password);</span>
+
+            // if the user already exists
+<span class="fc" id="L147">            User existUser = dao.getUserByEmail(email);</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">            if (existUser != null) {</span>
+<span class="fc" id="L149">                return new ModelAndView(null, &quot;base_page.html.ftl&quot;);</span>
+            }
+
+            User user;
+            try {
+
+<span class="fc" id="L155">                user = new User();</span>
+<span class="fc" id="L156">                user.setEmail(email);</span>
+<span class="fc" id="L157">                user.setPassword(password);</span>
+<span class="fc" id="L158">                user.setFirstName(firstName);</span>
+<span class="fc" id="L159">                user.setLastName(lastName);</span>
+
+<span class="fc" id="L161">                dao.createOrUpdate(user);</span>
+
+<span class="fc" id="L163">                res.status(301);</span>
+<span class="fc" id="L164">                req.session(true);</span>
+<span class="fc" id="L165">                req.session().attribute(&quot;user&quot;, user);</span>
+<span class="fc" id="L166">                res.redirect(&quot;/hello&quot;);</span>
+<span class="fc" id="L167">                return new ModelAndView(attributes, &quot;base_page.html.ftl&quot;);</span>
+<span class="nc" id="L168">            } catch (Exception e) {</span>
+<span class="nc" id="L169">                return handleException(res, attributes, e, &quot;register.html.ftl&quot;);</span>
+            }
+        }, new FreeMarkerEngine());
+<span class="fc" id="L172">    }</span>
+
+    private static void handleGetHello() {
+<span class="fc" id="L175">        get(&quot;/hello&quot;, (req, res) -&gt; {</span>
+<span class="fc" id="L176">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L177">            User user = getLoggedInUser(req);</span>
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">            if (null != user) {</span>
+<span class="fc" id="L179">                attributes.put(&quot;user&quot;, user);</span>
+            }
+<span class="fc" id="L181">            return new ModelAndView(attributes, &quot;base_page.html.ftl&quot;);</span>
+        }, new FreeMarkerEngine());
+<span class="fc" id="L183">    }</span>
+
+    private static void handleGetLogin() {
+<span class="fc" id="L186">        get(&quot;/login&quot;, (req, res) -&gt; {</span>
+<span class="nc" id="L187">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L188">            String user_name = req.params(&quot;user_name&quot;);</span>
+<span class="nc bnc" id="L189" title="All 4 branches missed.">            if (null == user_name || user_name.trim().isEmpty()) {</span>
+<span class="nc" id="L190">                attributes.put(&quot;user_name&quot;, &quot;&quot;);</span>
+            } else {
+<span class="nc" id="L192">                attributes.put(&quot;user_name&quot;, user_name);</span>
+            }
+
+<span class="nc" id="L195">            return new ModelAndView(attributes, &quot;login.html.ftl&quot;);</span>
+        }, new FreeMarkerEngine());
+<span class="fc" id="L197">    }</span>
+
+    private static void handlePostLogin() {
+<span class="fc" id="L200">        post(&quot;/login&quot;, (req, res) -&gt; {</span>
+<span class="nc" id="L201">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L202">            String user_name = req.queryParams(&quot;user_name&quot;);</span>
+<span class="nc" id="L203">            String password = req.queryParams(&quot;password&quot;);</span>
+
+<span class="nc" id="L205">            logger.info(&quot;Logging in &lt;&quot; + user_name + &quot;&gt;, &quot; + password);</span>
+
+<span class="nc" id="L207">            User user = null;</span>
+            try {
+<span class="nc" id="L209">                user = dao.getUserByEmail(user_name);</span>
+<span class="nc" id="L210">            } catch (Exception e) {</span>
+<span class="nc" id="L211">                handleException(res, attributes, e, &quot;login.html.ftl&quot;);</span>
+<span class="nc" id="L212">            }</span>
+<span class="nc bnc" id="L213" title="All 4 branches missed.">            if (null != user &amp;&amp; user.getPassword().equals(password)) {</span>
+<span class="nc" id="L214">                res.status(301);</span>
+<span class="nc" id="L215">                req.session(true);</span>
+<span class="nc" id="L216">                req.session().attribute(&quot;user&quot;, user);</span>
+<span class="nc" id="L217">                res.redirect(&quot;/hello&quot;);</span>
+<span class="nc" id="L218">                return new ModelAndView(attributes, &quot;base_page.html.ftl&quot;);</span>
+            } else {
+<span class="nc" id="L220">                attributes.put(&quot;errorMsg&quot;, &quot;Invalid email/password combination.&quot;);</span>
+<span class="nc" id="L221">                attributes.put(&quot;user_name&quot;, user_name);</span>
+<span class="nc" id="L222">                return new ModelAndView(attributes, &quot;login.html.ftl&quot;);</span>
+            }
+        }, new FreeMarkerEngine());
+<span class="fc" id="L225">    }</span>
+
+    private static void handleGetLogout() {
+<span class="fc" id="L228">        get(&quot;/logout&quot;, (req, res) -&gt; {</span>
+<span class="fc" id="L229">            User user = getLoggedInUser(req);</span>
+<span class="fc" id="L230">            spark.Session session = req.session();</span>
+<span class="pc bpc" id="L231" title="2 of 4 branches missed.">            if (null != session &amp;&amp; null != user) {</span>
+<span class="fc" id="L232">                session.invalidate();</span>
+            }
+<span class="fc" id="L234">            res.redirect(&quot;/&quot;);</span>
+<span class="fc" id="L235">            return &quot;&quot;;</span>
+        });
+<span class="fc" id="L237">    }</span>
+
+    private static ModelAndView handleException(Response res, Map&lt;String, Object&gt; attributes, Exception e, String templateName) {
+<span class="nc" id="L240">        res.status(500);</span>
+<span class="nc bnc" id="L241" title="All 4 branches missed.">        if (e instanceof SQLException &amp;&amp; null != e.getCause()) {</span>
+<span class="nc" id="L242">            attributes.put(&quot;errorMsg&quot;, e.getCause().getMessage());</span>
+        } else {
+<span class="nc" id="L244">            attributes.put(&quot;errorMsg&quot;, e.getMessage());</span>
+        }
+<span class="nc" id="L246">        e.printStackTrace();</span>
+<span class="nc" id="L247">        return new ModelAndView(attributes, templateName);</span>
+    }
+
+
+    private static User getLoggedInUser(Request req) {
+<span class="fc" id="L252">        spark.Session session = req.session();</span>
+<span class="fc" id="L253">        User user = null;</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        if (null != session) {</span>
+<span class="fc" id="L255">            user = session.&lt;User&gt;attribute(&quot;user&quot;);</span>
+        }
+<span class="fc" id="L257">        return user;</span>
+    }
+
+    private static void handleGetUserById() {
+<span class="fc" id="L261">        get(&quot;/user/:id&quot;, (req, res) -&gt; {</span>
+<span class="nc" id="L262">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L263">            User user = getLoggedInUser(req);</span>
+<span class="nc" id="L264">            attributes.put(&quot;user&quot;, user);</span>
+            try {
+<span class="nc" id="L266">                String id = req.params(&quot;:id&quot;);</span>
+<span class="nc" id="L267">                User person = dao.load(User.class, Long.parseLong(id));</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">                if (null != person) {</span>
+<span class="nc" id="L269">                    attributes.put(&quot;user&quot;, person);</span>
+                } else {
+<span class="nc" id="L271">                    attributes.put(&quot;errorMsg&quot;, &quot;No user with the ID &quot; + id + &quot;.&quot;);</span>
+                }
+<span class="nc" id="L273">                return new ModelAndView(attributes, &quot;user.html.ftl&quot;);</span>
+<span class="nc" id="L274">            } catch (Exception e) {</span>
+<span class="nc" id="L275">                return handleException(res, attributes, e, &quot;user.html.ftl&quot;);</span>
+            }
+        }, new FreeMarkerEngine());
+<span class="fc" id="L278">    }</span>
+
+
+    private static void handlePostCreateRocket() {
+<span class="fc" id="L282">        post(&quot;/rocket/create&quot;, (req, res) -&gt; {</span>
+<span class="nc" id="L283">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L284">            String name = req.queryParams(&quot;name&quot;);</span>
+<span class="nc" id="L285">            String country = req.queryParams(&quot;country&quot;);</span>
+
+<span class="nc" id="L287">            attributes.put(&quot;name&quot;, &quot;&quot;);</span>
+<span class="nc" id="L288">            attributes.put(&quot;country&quot;, &quot;&quot;);</span>
+
+<span class="nc" id="L290">            logger.info(&quot;Creating &lt;&quot; + name + &quot;&gt;&quot;);</span>
+
+            Rocket rocket;
+            try {
+
+<span class="nc" id="L295">                rocket = new Rocket(name, country, new LaunchServiceProvider());</span>
+
+<span class="nc" id="L297">                dao.createOrUpdate(rocket);</span>
+
+<span class="nc" id="L299">                res.status(200);</span>
+<span class="nc" id="L300">                res.redirect(&quot;/rockets&quot;);</span>
+<span class="nc" id="L301">                attributes.put(&quot;rockets&quot;, dao.loadAll(Rocket.class));</span>
+<span class="nc" id="L302">                return new ModelAndView(attributes, &quot;rockets.html.ftl&quot;);</span>
+<span class="nc" id="L303">            } catch (Exception e) {</span>
+<span class="nc" id="L304">                return handleException(res, attributes, e, &quot;rockets.html.ftl&quot;);</span>
+            }
+        }, new FreeMarkerEngine());
+<span class="fc" id="L307">    }</span>
+
+
+    private static void handleGetCreateRocket() {
+<span class="fc" id="L311">        get(&quot;/rocket/create&quot;, (req, res) -&gt; {</span>
+<span class="nc" id="L312">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L313">            attributes.put(&quot;name&quot;, &quot;&quot;);</span>
+<span class="nc" id="L314">            attributes.put(&quot;country&quot;, &quot;&quot;);</span>
+
+<span class="nc" id="L316">            return new ModelAndView(attributes, &quot;create_rocket.html.ftl&quot;);</span>
+        }, new FreeMarkerEngine());
+<span class="fc" id="L318">    }</span>
+
+    private static void handleGetRocket() {
+<span class="fc" id="L321">        get(&quot;/rocket/:id&quot;, (req, res) -&gt; {</span>
+<span class="nc" id="L322">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+            try {
+<span class="nc" id="L324">                String id = req.params(&quot;:id&quot;);</span>
+<span class="nc" id="L325">                Rocket rocket = dao.load(Rocket.class, Long.parseLong(id));</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">                if (null != rocket) {</span>
+<span class="nc" id="L327">                    attributes.put(&quot;rocket&quot;, rocket);</span>
+                } else {
+<span class="nc" id="L329">                    attributes.put(&quot;errorMsg&quot;, &quot;No rocket with the ID &quot; + id + &quot;.&quot;);</span>
+                }
+<span class="nc" id="L331">                return new ModelAndView(attributes, &quot;rocket.html.ftl&quot;);</span>
+<span class="nc" id="L332">            } catch (Exception e) {</span>
+<span class="nc" id="L333">                return handleException(res, attributes, e, &quot;rocket.html.ftl&quot;);</span>
+            }
+        }, new FreeMarkerEngine());
+<span class="fc" id="L336">    }</span>
+
+
+    private static void handleGetRockets() {
+<span class="fc" id="L340">        get(&quot;/rockets&quot;, (req, res) -&gt; {</span>
+<span class="nc" id="L341">            Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+            try {
+<span class="nc" id="L343">                attributes.put(&quot;rockets&quot;, dao.loadAll(Rocket.class));</span>
+<span class="nc" id="L344">                return new ModelAndView(attributes, &quot;rockets.html.ftl&quot;);</span>
+<span class="nc" id="L345">            } catch (Exception e) {</span>
+<span class="nc" id="L346">                return handleException(res, attributes, e, &quot;rockets.html.ftl&quot;);</span>
+            }
+        }, new FreeMarkerEngine());
+<span class="fc" id="L349">    }</span>
+
+    private static Properties loadProperties() throws IOException {
+<span class="fc" id="L352">        ClassPathResource resource = new ClassPathResource(&quot;app.properties&quot;);</span>
+<span class="fc" id="L353">        Properties properties = new Properties();</span>
+<span class="fc" id="L354">        InputStream stream = null;</span>
+        try {
+<span class="fc" id="L356">            stream = resource.getInputStream();</span>
+<span class="fc" id="L357">            properties.load(stream);</span>
+<span class="fc" id="L358">            return properties;</span>
+        } finally {
+<span class="fc" id="L360">            closeSilently(stream);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

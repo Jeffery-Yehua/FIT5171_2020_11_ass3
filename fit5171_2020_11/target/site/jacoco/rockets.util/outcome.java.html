@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>outcome.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FIT5171_20T3_11</a> &gt; <a href="index.source.html" class="el_package">rockets.util</a> &gt; <span class="el_source">outcome.java</span></div><h1>outcome.java</h1><pre class="source lang-java linenums">package rockets.util;
+
+public class outcome implements Comparable&lt;outcome&gt; {
+
+
+    private int failed;
+    private int successful;
+    private double percentage;
+
+<span class="fc" id="L10">    public outcome() {</span>
+<span class="fc" id="L11">        this.failed = 0;</span>
+<span class="fc" id="L12">        this.successful = 0;</span>
+<span class="fc" id="L13">        this.percentage = 0;</span>
+<span class="fc" id="L14">    }</span>
+
+
+    public void setFailed(int failed) {
+<span class="nc" id="L18">        this.failed = failed;</span>
+<span class="nc" id="L19">        percentage = this.successful / (this.successful + this.failed);</span>
+<span class="nc" id="L20">    }</span>
+
+    public void setSuccessful(int successful) {
+<span class="nc" id="L23">        this.successful = successful;</span>
+<span class="nc" id="L24">        percentage = this.successful / (this.successful + this.failed);</span>
+<span class="nc" id="L25">    }</span>
+
+
+    public int getFailed() {
+<span class="nc" id="L29">        return failed;</span>
+    }
+
+    public int getSuccessful() {
+<span class="nc" id="L33">        return successful;</span>
+    }
+
+    public double getPercentage() {
+<span class="nc" id="L37">        return percentage;</span>
+    }
+
+    public void incrementsuccessful(){
+<span class="fc" id="L41">        this.successful++;</span>
+<span class="fc" id="L42">        percentage = this.successful / (this.successful + this.failed);</span>
+<span class="fc" id="L43">    }</span>
+
+
+    public void incrementfailed(){
+<span class="fc" id="L47">        this.failed++;</span>
+<span class="fc" id="L48">        percentage = this.successful / (this.successful + this.failed);</span>
+<span class="fc" id="L49">    }</span>
+
+    @Override
+    public int compareTo(outcome o) {
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if(this.percentage-o.percentage&gt;0)</span>
+<span class="nc" id="L54">            return  1;</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">        else if (this.percentage-o.percentage==0)</span>
+<span class="fc" id="L56">            return 0;</span>
+<span class="nc" id="L57">        else return -1;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

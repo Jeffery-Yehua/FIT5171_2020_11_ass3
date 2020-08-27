@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Launch.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FIT5171_20T3_11</a> &gt; <a href="index.source.html" class="el_package">rockets.model</a> &gt; <span class="el_source">Launch.java</span></div><h1>Launch.java</h1><pre class="source lang-java linenums">package rockets.model;
+
+import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.Property;
+import org.neo4j.ogm.annotation.Relationship;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Objects;
+import java.util.Set;
+
+@NodeEntity
+<span class="fc" id="L13">public class Launch extends Entity {</span>
+<span class="fc" id="L14">    public enum LaunchOutcome {</span>
+<span class="fc" id="L15">        FAILED, SUCCESSFUL</span>
+    }
+
+    private LocalDate launchDate;
+
+    @Relationship(type = &quot;LAUNCHES&quot;, direction = &quot;INCOMING&quot;)
+    private Rocket launchVehicle;
+
+    @Relationship(type = &quot;PROVIDES&quot;)
+    private LaunchServiceProvider launchServiceProvider;
+
+    private Set&lt;String&gt; payload;
+
+    @Property(name = &quot;launchSite&quot;)
+    private String launchSite;
+
+    @Property(name = &quot;orbit&quot;)
+    private String orbit;
+
+    @Property(name = &quot;function&quot;)
+    private String function;
+
+    @Property(name = &quot;price&quot;)
+    private BigDecimal price;
+
+    @Property(name = &quot;launchOutcome&quot;)
+    private LaunchOutcome launchOutcome;
+
+    public LocalDate getLaunchDate() {
+<span class="fc" id="L44">        return launchDate;</span>
+    }
+
+    public void setLaunchDate(LocalDate launchDate) {
+<span class="fc" id="L48">        this.launchDate = launchDate;</span>
+<span class="fc" id="L49">    }</span>
+
+    public Rocket getLaunchVehicle() {
+<span class="fc" id="L52">        return launchVehicle;</span>
+    }
+
+    public void setLaunchVehicle(Rocket launchVehicle) {
+<span class="fc" id="L56">        this.launchVehicle = launchVehicle;</span>
+<span class="fc" id="L57">    }</span>
+
+    public LaunchServiceProvider getLaunchServiceProvider() {
+<span class="fc" id="L60">        return launchServiceProvider;</span>
+    }
+
+    public void setLaunchServiceProvider(LaunchServiceProvider launchServiceProvider) {
+<span class="fc" id="L64">        this.launchServiceProvider = launchServiceProvider;</span>
+<span class="fc" id="L65">    }</span>
+
+    public Set&lt;String&gt; getPayload() {
+<span class="nc" id="L68">        return payload;</span>
+    }
+
+    public void setPayload(Set&lt;String&gt; payload) {
+<span class="nc" id="L72">        this.payload = payload;</span>
+<span class="nc" id="L73">    }</span>
+
+    public String getLaunchSite() {
+<span class="fc" id="L76">        return launchSite;</span>
+    }
+
+    public void setLaunchSite(String launchSite) {
+<span class="fc" id="L80">        this.launchSite = launchSite;</span>
+<span class="fc" id="L81">    }</span>
+
+    public String getOrbit() {
+<span class="fc" id="L84">        return orbit;</span>
+    }
+
+    public void setOrbit(String orbit) {
+<span class="fc" id="L88">        this.orbit = orbit;</span>
+<span class="fc" id="L89">    }</span>
+
+    public String getFunction() {
+<span class="fc" id="L92">        return function;</span>
+    }
+
+    public void setFunction(String function) {
+<span class="fc" id="L96">        this.function = function;</span>
+<span class="fc" id="L97">    }</span>
+
+    public BigDecimal getPrice() {
+<span class="fc" id="L100">        return price;</span>
+    }
+
+    public void setPrice(BigDecimal price) {
+<span class="fc" id="L104">        this.price = price;</span>
+<span class="fc" id="L105">    }</span>
+
+    public LaunchOutcome getLaunchOutcome() {
+<span class="fc" id="L108">        return launchOutcome;</span>
+    }
+
+    public void setLaunchOutcome(LaunchOutcome launchOutcome) {
+<span class="fc" id="L112">        this.launchOutcome = launchOutcome;</span>
+<span class="fc" id="L113">    }</span>
+
+    @Override
+    public boolean equals(Object o) {
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L118" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L119">        Launch launch = (Launch) o;</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        return Objects.equals(launchDate, launch.launchDate) &amp;&amp;</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                Objects.equals(launchVehicle, launch.launchVehicle) &amp;&amp;</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">                Objects.equals(launchServiceProvider, launch.launchServiceProvider) &amp;&amp;</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">                Objects.equals(orbit, launch.orbit);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L128">        return Objects.hash(launchDate, launchVehicle, launchServiceProvider, orbit);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L133">        return price.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>
