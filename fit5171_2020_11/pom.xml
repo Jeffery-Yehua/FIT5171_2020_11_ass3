@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>space</groupId>
-    <artifactId>fit5171_2020_11</artifactId>
+    <artifactId>FIT5171_20T3_11</artifactId>
     <version>1.0-SNAPSHOT</version>
     <build>
         <plugins>
